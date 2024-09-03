@@ -1,0 +1,14 @@
+json.m_workspace @m_workspace
+json.current_user @m_current_user
+json.m_users @m_users 
+json.m_channels @m_channels 
+json.m_p_channels @m_p_channels
+json.direct_msgcounts @direct_msgcounts
+json.all_unread_count @all_unread_count
+json.m_channelsids @m_channelsids
+json.t_direct_draft @t_direct_draft
+json.t_direct_thread_draft @t_direct_thread_draft
+json.t_group_draft @t_group_draft
+json.t_group_threads_draft @t_group_threads_draft
+json.direct_draft_status_counts @direct_draft_status_counts
+json.group_draft_status_counts @group_draft_status_counts

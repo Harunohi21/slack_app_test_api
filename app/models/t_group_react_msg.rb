@@ -1,0 +1,2 @@
+class TGroupReactMsg < ApplicationRecord
+end

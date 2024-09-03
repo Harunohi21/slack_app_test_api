@@ -1,0 +1,2 @@
+class TGroupReactThread < ApplicationRecord
+end

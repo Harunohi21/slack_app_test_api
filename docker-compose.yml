@@ -1,0 +1,76 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    container_name: local_pgdb
+    # dbのユーザー名とパスワードでこれが無いとdbが起動できなかった
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: p1a2s3sword
+      TZ: Asia/
+    ports:
+        - "5432:5432"
+    # 無くても動くけど指定しておくとdocker-composeを停止してもdbの内容が永続化されるため、指定することが多いと思われる
+    # https://matsuand.github.io/docs.docker.jp.onthefly/storage/volumes/
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    # 無くても動くが指定しておくとコンテナ停止時にサービスが再起動してくれる
+    # https://docs.docker.jp/v19.03/config/container/start-containers-automatically.html
+    # restart: always
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user-name@domain-name.com
+      PGADMIN_DEFAULT_PASSWORD: strong-password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - minio:/data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+  redis:
+    image: redis:latest
+    ports:
+      - 6384:6383
+    volumes:
+      - redis:/data
+    command: redis-server --appendonly yes --requirepass 123
+  api:
+    build: .
+    # tmp/pids/server.pidが残ってたら `A server is already running. ~~` のエラーでrailsを起動できないので事前に消してから、`rails sever` する
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    # 上記のdbイメージで指定したユーザー名とパスワードをrails側でも指定するため環境変数に設定。
+    environment:
+      RAILS_ENV: development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: p1a2s3sword
+    # ホストのカレントディレクトリ(.)とイメージ内の/myappディレクトリを同期させている
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    # restart: always # コンテナが停止すると常に再起動
+    tty: true # 疑似ターミナル (pseudo-TTY) を割り当て。https://docs.docker.jp/compose/compose-file/index.html#tty
+    stdin_open: true # サービス コンテナに標準入力を割り当てて実行するよう設定(https://docs.docker.jp/compose/compose-file/index.html#stdin-open)。
+    depends_on:
+      - postgres
+      - redis
+volumes:
+  postgres_volume:
+  pgadmin-data:
+  redis:
+  minio:
+    driver: local

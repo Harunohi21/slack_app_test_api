@@ -1,0 +1,38 @@
+# frozen_string_literal: true
+
+json.direct_Star @t_direct_messages
+json.direct_star_thread @t_direct_threads
+json.group_star @t_group_messages
+json.group_star_thread @t_group_threads
+
+json.t_direct_react_msgids @t_direct_react_msgids
+json.t_direct_msg_emojiscounts @t_direct_msg_emojiscounts
+json.react_usernames @react_usernames
+
+json.t_direct_react_thread_msgids @t_direct_react_thread_msgids
+json.t_direct_thread_emojiscounts @t_direct_thread_emojiscounts
+json.t_direct_thread_react_usernames @t_direct_thread_react_usernames
+
+json.t_group_react_msgids @t_group_react_msgids
+json.group_emoji_counts @group_emoji_counts
+json.group_react_usernames @group_react_usernames
+
+json.t_group_react_thread_msgids @t_group_react_thread_msgids
+json.t_group_thread_emoji_counts @t_group_thread_emoji_counts
+json.t_group_thread_react_usernames @t_group_thread_react_usernames
+
+json.t_direct_react_msgids @t_direct_react_msgids
+json.t_direct_msg_emojiscounts @t_direct_msg_emojiscounts
+json.react_usernames @react_usernames
+
+json.t_direct_react_thread_msgids @t_direct_react_thread_msgids
+json.t_direct_thread_emojiscounts @t_direct_thread_emojiscounts
+json.t_direct_thread_react_usernames @t_direct_thread_react_usernames
+
+json.t_group_react_msgids @t_group_react_msgids
+json.group_emoji_counts @group_emoji_counts
+json.group_react_usernames @group_react_usernames
+
+json.t_group_react_thread_msgids @t_group_react_thread_msgids
+json.t_group_thread_emoji_counts @t_group_thread_emoji_counts
+json.t_group_thread_react_usernames @t_group_thread_react_usernames

@@ -1,0 +1,25 @@
+current directory: /app/vendor/bundle/ruby/3.1.0/gems/duktape-2.7.0.0/ext/duktape
+/usr/local/bin/ruby -I /usr/local/lib/ruby/3.1.0 -r ./siteconf20240213-8-601n06.rb extconf.rb
+checking for rb_sym2str()... yes
+creating Makefile
+
+current directory: /app/vendor/bundle/ruby/3.1.0/gems/duktape-2.7.0.0/ext/duktape
+make DESTDIR\= clean
+
+current directory: /app/vendor/bundle/ruby/3.1.0/gems/duktape-2.7.0.0/ext/duktape
+make DESTDIR\=
+compiling duktape.c
+duk_error_macros.c: In function ‘duk_err_handle_error_fmt’:
+duk_error_macros.c:19:2: warning: function ‘duk_err_handle_error_fmt’ might be a candidate for ‘gnu_printf’ format attribute [-Wsuggest-attribute=format]
+duk_api_stack.c: In function ‘duk__try_push_vsprintf’:
+duk_api_stack.c:4727:2: warning: function ‘duk__try_push_vsprintf’ might be a candidate for ‘gnu_printf’ format attribute [-Wsuggest-attribute=format]
+duk_util_tinyrandom.c: At top level:
+cc1: note: unrecognized command-line option ‘-Wno-self-assign’ may have been intended to silence earlier diagnostics
+cc1: note: unrecognized command-line option ‘-Wno-parentheses-equality’ may have been intended to silence earlier diagnostics
+cc1: note: unrecognized command-line option ‘-Wno-constant-logical-operand’ may have been intended to silence earlier diagnostics
+compiling duktape_ext.c
+linking shared-object duktape_ext.so
+
+current directory: /app/vendor/bundle/ruby/3.1.0/gems/duktape-2.7.0.0/ext/duktape
+make DESTDIR\= install
+/usr/bin/install -c -m 0755 duktape_ext.so ./.gem.20240213-8-i8hag0

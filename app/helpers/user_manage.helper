@@ -1,0 +1,6 @@
+module UserManageHelper
+    # Logs in the given user.
+    def log_in(t_user_workspace)
+        @workspaceid = t_user_workspace.workspaceid
+    end
+end

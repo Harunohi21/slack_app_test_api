@@ -1,0 +1,2 @@
+class TDirectReactThread < ApplicationRecord
+end

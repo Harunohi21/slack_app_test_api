@@ -1,0 +1,2 @@
+class TDirectReactMsg < ApplicationRecord
+end
