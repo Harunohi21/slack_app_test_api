@@ -34,7 +34,7 @@ gem "jbuilder", "~> 2.5"
 # gem 'bcrypt', '~> 3.1.7'
 
 # Use ActiveStorage variant
-gem 'mini_magick', '~> 4.8'
+gem "mini_magick", "~> 4.8"
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
@@ -47,6 +47,8 @@ gem "aws-sdk-s3", require: false
 gem "dotenv-rails"
 gem "jwt"
 gem "rack-cors"
+
+gem "dropbox-api", "0.4.8"
 
 gem "actioncable"
 gem "mime-types"
