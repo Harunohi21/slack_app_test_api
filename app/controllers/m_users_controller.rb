@@ -236,6 +236,12 @@ class MUsersController < ApplicationController
     Rails.logger.info(image_mime)
     Rails.logger.info(image_data)
 
+    client = DropboxApi::Client.new(ENV.fetch(DROPBOX_ACCESS_TOKEN))
+
+    file_content = "Hello, Dropbox!"
+    client.upload("/hello.txt", file_content)
+    puts "File uploaded successfully!"
+
     if MIME::Types[image_mime].empty?
       render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
       return
