@@ -2,7 +2,7 @@ require "base64"
 require "digest"
 require "aws-sdk-s3"
 require "mime/types"
-# require "dropbox_api"
+require "dropbox_api"
 
 class MUsersController < ApplicationController
   skip_before_action :authenticate_request, only: [:login_user, :create, :confirm, :confirm_member_signup]
