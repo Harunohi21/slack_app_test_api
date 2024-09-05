@@ -2,6 +2,7 @@ require "base64"
 require "digest"
 require "aws-sdk-s3"
 require "mime/types"
+require "dropbox_api"
 
 class MUsersController < ApplicationController
   skip_before_action :authenticate_request, only: [:login_user, :create, :confirm, :confirm_member_signup]
@@ -230,6 +231,10 @@ class MUsersController < ApplicationController
     image = params[:image]
     image_mime = image[:mime]
     image_data = decode(image[:data])
+    Rails.logger.info("parameters...")
+    Rails.logger.info(image)
+    Rails.logger.info(image_mime)
+    Rails.logger.info(image_data)
 
     if MIME::Types[image_mime].empty?
       render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type

@@ -6,8 +6,6 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-
-
 module FlutterBackend
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -32,9 +30,10 @@ module FlutterBackend
     config.api_only = true
 
     # WebSocketリクエスト
-    config.action_cable.mount_path = '/cable'
-    
+    config.action_cable.mount_path = "/cable"
+
     # domain追加
-    config.hosts << ENV.fetch('RENDER_API_HOST', nil)
+    config.hosts << ENV.fetch("RENDER_API_HOST", nil)
+    config.hosts << "slack-app-test-api.onrender.com"
   end
 end

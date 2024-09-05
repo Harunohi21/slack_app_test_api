@@ -42,7 +42,7 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :sendmail
 
   host = ENV.fetch("RENDER_API_HOST", nil),
-  config.action_mailer.default_url_options = { host: "mysite-6tke.onrender.com", protocol: "https" }
+  config.action_mailer.default_url_options = { host: "slack-app-test-api.onrender.com", protocol: "https" }
 
   config.action_mailer.perform_caching = false
 

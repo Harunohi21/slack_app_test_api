@@ -22,7 +22,7 @@ Rails.application.configure do
   if Rails.root.join("tmp/caching-dev.txt").exist?
     config.cache_store = :memory_store
     config.public_file_server.headers = {
-      "Cache-Control" => "public, max-age=#{2.days.to_i}"
+      "Cache-Control" => "public, max-age=#{2.days.to_i}",
     }
   else
     config.action_controller.perform_caching = false
@@ -39,12 +39,12 @@ Rails.application.configure do
 
   config.action_mailer.delivery_method = :sendmail
 
-  host = ENV.fetch('RENDER_API_HOST', nil),              
+  host = ENV.fetch("RENDER_API_HOST", nil),
   # config/environments/production.rb
 
-         # Local server
-  
-  config.action_mailer.default_url_options = { host: 'mysite-6tke.onrender.com', protocol: 'https' }
+  # Local server
+
+  config.action_mailer.default_url_options = { host: "slack-app-test-api.onrender.com", protocol: "https" }
 
   config.action_mailer.perform_caching = false
 
@@ -55,7 +55,6 @@ Rails.application.configure do
   config.active_record.migration_error = :page_load
 
   # Highlight code that triggered database queries in logs.
-
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
@@ -75,7 +74,6 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
-
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 
@@ -83,20 +81,19 @@ Rails.application.configure do
   # config.action_view.annotate_rendered_view_with_filenames = true
 
   # Uncomment if you wish to allow Action Cable access from any origin.
-   config.action_cable.disable_request_forgery_protection = true
+  config.action_cable.disable_request_forgery_protection = true
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
-  
+
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-  :address              => "smtp.gmail.com",
-  :port                 => 587,
-  :domain               => 'gmail.com',
-  :user_name            =>  ENV.fetch('SMTP_USERNAME', nil),
-  :password             =>  ENV.fetch('SMTP_PASSWORD', nil),
-  :authentication       => 'plain',
-  # :enable_starttls_auto => true 
- }
-
+    :address => "smtp.gmail.com",
+    :port => 587,
+    :domain => "gmail.com",
+    :user_name => ENV.fetch("SMTP_USERNAME", nil),
+    :password => ENV.fetch("SMTP_PASSWORD", nil),
+    :authentication => "plain",
+  # :enable_starttls_auto => true
+  }
 end
