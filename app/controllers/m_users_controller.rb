@@ -230,28 +230,17 @@ class MUsersController < ApplicationController
   def profile_update
     image = params[:image]
     image_mime = image[:mime]
-    image_data = decode(image[:data])
+    encoded_image = image[:data]
+
     Rails.logger.info("parameters...")
     Rails.logger.info(image)
     Rails.logger.info(image_mime)
-    Rails.logger.info(image_data)
-
-    Rails.logger.info("before client")
-    client = DropboxApi::Client.new(ENV.fetch(DROPBOX_ACCESS_TOKEN))
-    Rails.logger.info("after client")
-
-    file_content = "Hello, Dropbox!"
-    client.upload("/hello.txt", file_content)
-    puts "File uploaded successfully!"
 
     if MIME::Types[image_mime].empty?
-      render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
-      return
+      return render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
     end
 
-    # Access the base64 encoded image
-    encoded_image = params.dig(:image, :data)
-
+    # Decode the base64 encoded image
     image_data = Base64.decode64(encoded_image.split(",").last)
 
     # Create a Tempfile to store the decoded image
@@ -264,17 +253,25 @@ class MUsersController < ApplicationController
     image = MiniMagick::Image.read(tempfile)
     width, height = image.width, image.height
 
-    # Add your logic to handle width and height
     if width > 500 || height > 500
       tempfile.close
       tempfile.unlink
       return render json: { error: "Image dimensions are too large" }, status: :unprocessable_entity
     end
+
     tempfile.close
     tempfile.unlink
 
-    image_extension = extension(image_mime)
-    image_url = put_s3(image_data, image_extension, image_mime)
+    # Initialize Dropbox client (make sure to use a secure method for token)
+    client = DropboxApi::Client.new(sl.B8WX-wD3-thpJbCggN62kyh5AistXwfVZ6wiQSUomVGZSJKRBBVvgIX8hSKOFXQl9jSHgy-hAfH_NnTqqeokaMX6bOTlgGtzkh-6n8bayK39vhiRrqtYXBA2oaCgHYYZEbxb9olmvyF2) # Use environment variable
+
+    # Upload the image to Dropbox
+    dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
+    client.upload(dropbox_path, image_data)
+
+    # URL or path to the uploaded image in Dropbox
+    image_url = client.get_temporary_link(dropbox_path).link
+
     @m_user = MUser.find_by(id: params[:user_id])
 
     if @m_user
@@ -283,7 +280,9 @@ class MUsersController < ApplicationController
       profile_image_record.image_url = image_url
 
       if profile_image_record.save
-        delete_from_s3(old_image_url) if old_image_url.present?
+        # Optionally, you can delete the old image from Dropbox here
+        # delete_from_dropbox(old_image_url) if old_image_url.present?
+
         render json: {
           message: "Profile Image Updated Successfully",
           user_id: @m_user.id,
