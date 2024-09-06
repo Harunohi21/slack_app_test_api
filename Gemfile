@@ -48,7 +48,7 @@ gem "dotenv-rails"
 gem "jwt"
 gem "rack-cors"
 
-gem "dropbox-api", "0.4.8"
+gem "dropbox_api"
 
 gem "actioncable"
 gem "mime-types"
