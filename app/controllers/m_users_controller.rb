@@ -263,7 +263,7 @@ class MUsersController < ApplicationController
     tempfile.unlink
 
     # Initialize Dropbox client (make sure to use a secure method for token)
-    client = DropboxApi::Client.new("sl.B8bguvYKTiZb37piUuVoTOnA89YF1ykCLVHKk-0OTLCmvgBbMCPqvbm9Gp3BFXHrZSG1h8LIJnZjU-99keZogx9WBq8y3GDlUK74NMjAvxbQCn8UrnfO-fHpKq-mBQEerNe5Cu4AOAF2xuA") # Use environment variable
+    client = DropboxApi::Client.new(ENV.fetch["DROPBOX_ACCESS_TOKEN", nil]) # Use environment variable
 
     file_content = "Hello, Dropbox!"
     client.upload("/hello.txt", file_content)
