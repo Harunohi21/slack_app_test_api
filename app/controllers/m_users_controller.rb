@@ -264,8 +264,10 @@ class MUsersController < ApplicationController
 
     # Initialize Dropbox client (make sure to use a secure method for token)
     Rails.logger.info("dropboxapi access token...")
-    Rails.logger.info(ENV.fetch["DROPBOX_ACCESS_TOKEN"])
-    client = DropboxApi::Client.new(ENV.fetch["DROPBOX_ACCESS_TOKEN"]) # Use environment variable
+    Rails.logger.info(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+    Rails.logger.info("[]")
+    Rails.logger.info(ENV["DROPBOX_ACCESS_TOKEN"])
+    client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN")) # Use environment variable
 
     file_content = "Hello, Dropbox!"
     client.upload("/hello.txt", file_content)
