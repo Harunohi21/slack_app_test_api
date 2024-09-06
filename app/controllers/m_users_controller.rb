@@ -263,7 +263,7 @@ class MUsersController < ApplicationController
     tempfile.unlink
 
     # Initialize Dropbox client (make sure to use a secure method for token)
-    client = DropboxApi::Client.new("sl.B8WX-wD3-thpJbCggN62kyh5AistXwfVZ6wiQSUomVGZSJKRBBVvgIX8hSKOFXQl9jSHgy-hAfH_NnTqqeokaMX6bOTlgGtzkh-6n8bayK39vhiRrqtYXBA2oaCgHYYZEbxb9olmvyF2") # Use environment variable
+    client = DropboxApi::Client.new("sl.B8bguvYKTiZb37piUuVoTOnA89YF1ykCLVHKk-0OTLCmvgBbMCPqvbm9Gp3BFXHrZSG1h8LIJnZjU-99keZogx9WBq8y3GDlUK74NMjAvxbQCn8UrnfO-fHpKq-mBQEerNe5Cu4AOAF2xuA") # Use environment variable
 
     # Upload the image to Dropbox
     dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
