@@ -265,6 +265,10 @@ class MUsersController < ApplicationController
     # Initialize Dropbox client (make sure to use a secure method for token)
     client = DropboxApi::Client.new("sl.B8bguvYKTiZb37piUuVoTOnA89YF1ykCLVHKk-0OTLCmvgBbMCPqvbm9Gp3BFXHrZSG1h8LIJnZjU-99keZogx9WBq8y3GDlUK74NMjAvxbQCn8UrnfO-fHpKq-mBQEerNe5Cu4AOAF2xuA") # Use environment variable
 
+    file_content = "Hello, Dropbox!"
+    client.upload("/hello.txt", file_content)
+    puts "File uploaded successfully!"
+
     # Upload the image to Dropbox
     dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
     client.upload(dropbox_path, image_data)
