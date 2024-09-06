@@ -2,6 +2,7 @@ require "base64"
 require "digest"
 require "aws-sdk-s3"
 require "mime/types"
+require "dropbox_api"
 
 class MUsersController < ApplicationController
   skip_before_action :authenticate_request, only: [:login_user, :create, :confirm, :confirm_member_signup]
@@ -235,9 +236,13 @@ class MUsersController < ApplicationController
     Rails.logger.info(image_mime)
     Rails.logger.info(image_data)
 
-    # file_content = "Hello, Dropbox!"
-    # client.upload("/hello.txt", file_content)
-    # puts "File uploaded successfully!"
+    Rails.logger.info("before client")
+    client = DropboxApi::Client.new(ENV.fetch(DROPBOX_ACCESS_TOKEN))
+    Rails.logger.info("after client")
+
+    file_content = "Hello, Dropbox!"
+    client.upload("/hello.txt", file_content)
+    puts "File uploaded successfully!"
 
     if MIME::Types[image_mime].empty?
       render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
