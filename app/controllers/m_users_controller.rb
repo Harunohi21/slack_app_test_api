@@ -262,6 +262,9 @@ class MUsersController < ApplicationController
     tempfile.close
     tempfile.unlink
 
+    image_extension = extension(image_mime)
+    image_url = put_s3(image_data, image_extension, image_mime)
+
     # Initialize Dropbox client (make sure to use a secure method for token)
     Rails.logger.info("dropboxapi access token...")
     Rails.logger.info(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
@@ -293,6 +296,7 @@ class MUsersController < ApplicationController
         # Optionally, you can delete the old image from Dropbox here
         # delete_from_dropbox(old_image_url) if old_image_url.present?
 
+        delete_from_s3(old_image_url) if old_image_url.present?
         render json: {
           message: "Profile Image Updated Successfully",
           user_id: @m_user.id,
@@ -334,22 +338,22 @@ class MUsersController < ApplicationController
   def put_s3(data, extension, mime_type)
     unique_time = Time.now.strftime("%Y%m%d%H%M%S")
     file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
-    s3 = Aws::S3::Resource.new
-    bucket = s3.bucket("rails-blog-minio")
-    obj = bucket.object("profile_images/#{file_name}")
+    # s3 = Aws::S3::Resource.new
+    # bucket = s3.bucket("rails-blog-minio")
+    # obj = bucket.object("profile_images/#{file_name}")
 
     client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
     puts "Files Upload Successfully"
-    client.upload(data, file_name)
+    client.upload(file_name, data)
 
-    obj.put(
-      acl: "public-read",
-      body: data,
-      content_type: mime_type,
-      content_disposition: "inline",
-    )
+    # obj.put(
+    #   acl: "public-read",
+    #   body: data,
+    #   content_type: mime_type,
+    #   content_disposition: "inline",
+    # )
 
-    obj.public_url
+    # obj.public_url
   end
 
   def delete_from_s3(url)
