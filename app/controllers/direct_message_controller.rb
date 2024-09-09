@@ -2,6 +2,7 @@ require "base64"
 require "digest"
 require "aws-sdk-s3"
 require "mime/types"
+require "dropbox_api"
 
 class DirectMessageController < ApplicationController
   def index
@@ -304,6 +305,9 @@ class DirectMessageController < ApplicationController
     s3 = Aws::S3::Resource.new
     bucket = s3.bucket("rails-blog-minio")
     obj = bucket.object("#{folder}/#{file_name}")
+
+    client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+    client.upload(data, file_name)
 
     obj.put(
       acl: "public-read",

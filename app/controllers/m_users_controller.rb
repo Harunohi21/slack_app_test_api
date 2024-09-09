@@ -267,18 +267,20 @@ class MUsersController < ApplicationController
     Rails.logger.info(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
     Rails.logger.info("[]")
     Rails.logger.info(ENV["DROPBOX_ACCESS_TOKEN"])
-    client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN")) # Use environment variable
 
-    file_content = "Hello, Dropbox!"
-    client.upload("/hello.txt", file_content)
-    puts "File uploaded successfully!"
+    # client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN")) # Use environment variable
+
+    # file_content = "Hello, Dropbox!"
+    # client.upload("/hello.txt", file_content)
+    # puts "File uploaded successfully!"
 
     # Upload the image to Dropbox
-    dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
-    client.upload(dropbox_path, image_data)
+    # dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
+    # client.upload(dropbox_path, image_data)
 
     # URL or path to the uploaded image in Dropbox
-    image_url = client.get_temporary_link(dropbox_path).link
+
+    # image_url = client.get_temporary_link(dropbox_path).link
 
     @m_user = MUser.find_by(id: params[:user_id])
 
@@ -336,6 +338,10 @@ class MUsersController < ApplicationController
     bucket = s3.bucket("rails-blog-minio")
     obj = bucket.object("profile_images/#{file_name}")
 
+    client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+    puts "Files Upload Successfully"
+    client.upload(data, file_name)
+
     obj.put(
       acl: "public-read",
       body: data,
@@ -352,6 +358,10 @@ class MUsersController < ApplicationController
     file_path = url.split("#{bucket_name}/").last
     bucket = s3.bucket(bucket_name)
     obj = bucket.object(file_path)
+
+    client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+    Puts "Files delete successfully"
+    client.delete(file_path)
 
     obj.delete
   end
