@@ -49,6 +49,7 @@ gem "jwt"
 gem "rack-cors"
 
 gem "dropbox_api"
+gem "dropbox-sdk"
 
 gem "actioncable"
 gem "mime-types"

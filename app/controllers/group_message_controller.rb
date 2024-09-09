@@ -4,8 +4,11 @@ require "base64"
 require "digest"
 require "aws-sdk-s3"
 require "mime/types"
+require "dropbox_api"
 
 class GroupMessageController < ApplicationController
+  client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+
   def show
     @m_user = MUser.find_by(id: @current_user)
     @m_workspace = MWorkspace.find_by(id: @current_workspace)
@@ -49,7 +52,8 @@ class GroupMessageController < ApplicationController
     file_records.each do |file_record|
       file_record[:t_group_message_id] = @t_group_message.id
       file_record[:groupmsgid] = @t_group_message.id
-      TGroupMsgFile.create(file_record)
+      # TGroupMsgFile.create(file_record)
+      client.upload(file_record)
     end
 
     mention_name = params[:mention_name]
@@ -155,7 +159,21 @@ class GroupMessageController < ApplicationController
             end
             folder_name_for_group_thread_message = "group_thread_message_files"
             file_extension = extension(image_mime)
-            file_url = put_s3(image_data, file_extension, image_mime, folder_name_for_group_thread_message)
+
+            # Modify start
+
+            # client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN")) # Use environment variable
+            # Upload the image to Dropbox
+            dropbox_path = "/group_message_image#{Time.now.to_i}.jpg" # or any unique path
+            client.upload(dropbox_path, image_data)
+
+            # URL or path to the uploaded image in Dropbox
+            file_url = client.get_temporary_link(dropbox_path).link
+
+            # file_url = put_s3(image_data, file_extension, image_mime, folder_name_for_group_thread_message)
+
+            # Modify end
+
             file_records << { file: file_url, mime_type: image_mime, extension: file_extension, m_user_id: @m_user.id, file_name: file_name }
           end
         end
@@ -193,7 +211,6 @@ class GroupMessageController < ApplicationController
           @t_user_channels.each do |u_channel|
             next unless u_channel.userid != @m_user.id
             if (@t_group_thread.draft_message_status != true)
-
               u_channel.message_count += 1
               temp_msgid = ""
               unless u_channel.unread_thread_message.nil?
@@ -376,7 +393,7 @@ class GroupMessageController < ApplicationController
     @update_t_group_message = TGroupMessage.where(id: params[:id]).first
 
     ActionCable.server.broadcast("group_message_channel", {
-      update_group_message:@update_t_group_message,
+      update_group_message: @update_t_group_message,
       profile_image: @sender_profile_image,
       mention: mention_name,
       sender_name: @current_user.name,
