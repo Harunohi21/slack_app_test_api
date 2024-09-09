@@ -263,7 +263,7 @@ class MUsersController < ApplicationController
     tempfile.unlink
 
     image_extension = extension(image_mime)
-    image_url = put_s3(image_data, image_extension, image_mime)
+    image_url = put_s3(image_data)
 
     # Initialize Dropbox client (make sure to use a secure method for token)
     Rails.logger.info("dropboxapi access token...")
@@ -335,16 +335,17 @@ class MUsersController < ApplicationController
     mime.extensions.first ? ".#{mime.extensions.first}" : raise("Unknown extension for MIME type")
   end
 
-  def put_s3(data, extension, mime_type)
-    unique_time = Time.now.strftime("%Y%m%d%H%M%S")
-    file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
+  def put_s3(data)
+    # unique_time = Time.now.strftime("%Y%m%d%H%M%S")
+    # file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
     # s3 = Aws::S3::Resource.new
     # bucket = s3.bucket("rails-blog-minio")
     # obj = bucket.object("profile_images/#{file_name}")
 
     client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+    dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
     puts "Files Upload Successfully"
-    client.upload(file_name, data)
+    client.upload(dropbox_path, data)
 
     # obj.put(
     #   acl: "public-read",
