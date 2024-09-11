@@ -296,7 +296,7 @@ class MUsersController < ApplicationController
         # Optionally, you can delete the old image from Dropbox here
         # delete_from_dropbox(old_image_url) if old_image_url.present?
 
-        delete_from_s3(old_image_url) if old_image_url.present?
+        # delete_from_s3(old_image_url) if old_image_url.present?
         render json: {
           message: "Profile Image Updated Successfully",
           user_id: @m_user.id,
@@ -335,39 +335,62 @@ class MUsersController < ApplicationController
     mime.extensions.first ? ".#{mime.extensions.first}" : raise("Unknown extension for MIME type")
   end
 
-  def put_s3(data)
-    # unique_time = Time.now.strftime("%Y%m%d%H%M%S")
-    # file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
-    # s3 = Aws::S3::Resource.new
-    # bucket = s3.bucket("rails-blog-minio")
-    # obj = bucket.object("profile_images/#{file_name}")
+  # def put_s3(data)
+  # unique_time = Time.now.strftime("%Y%m%d%H%M%S")
+  # file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
+  # s3 = Aws::S3::Resource.new
+  # bucket = s3.bucket("rails-blog-minio")
+  # obj = bucket.object("profile_images/#{file_name}")
+
+  # obj.put(
+  #   acl: "public-read",
+  #   body: data,
+  #   content_type: mime_type,
+  #   content_disposition: "inline",
+  # )
+
+  # obj.public_url
+
+  # end
+
+  def upload_to_dropbox(data, extension, mime_type)
+    unique_time = Time.now.strftime("%Y%m%d%H%M%S")
+    file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
+    dropbox_path = "/profile_images/#{file_name}"
 
     client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
-    dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
-    puts "Files Upload Successfully"
-    client.upload(dropbox_path, data)
 
-    # obj.put(
-    #   acl: "public-read",
-    #   body: data,
-    #   content_type: mime_type,
-    #   content_disposition: "inline",
-    # )
-
-    # obj.public_url
+    begin
+      client.upload(dropbox_path, data, mode: :add, autorename: true, mute: false)
+      shared_link = client.create_shared_link_with_settings(dropbox_path)
+      shared_link.url
+    rescue DropboxApi::Errors::HttpError => e
+      puts "Failed to upload file: #{e.message}"
+      nil
+    end
   end
 
-  def delete_from_s3(url)
-    s3 = Aws::S3::Resource.new
-    bucket_name = "rails-blog-minio"
-    file_path = url.split("#{bucket_name}/").last
-    bucket = s3.bucket(bucket_name)
-    obj = bucket.object(file_path)
+  # def delete_from_s3(url)
+  #   s3 = Aws::S3::Resource.new
+  #   bucket_name = "rails-blog-minio"
+  #   file_path = url.split("#{bucket_name}/").last
+  #   bucket = s3.bucket(bucket_name)
+  #   obj = bucket.object(file_path)
 
+  #   client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+  #   Puts "Files delete successfully"
+  #   client.delete(file_path)
+
+  #   obj.delete
+  # end
+
+  def delete_from_dropbox(url)
     client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
-    Puts "Files delete successfully"
-    client.delete(file_path)
 
-    obj.delete
+    # Extract the file path from the URL
+    file_path = url.split("dropbox.com/home").last
+
+    # Delete the file
+    client.delete(file_path)
   end
 end
