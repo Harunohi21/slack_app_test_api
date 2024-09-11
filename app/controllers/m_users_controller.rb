@@ -227,76 +227,125 @@ class MUsersController < ApplicationController
     render json: { error_message: e.record.errors.messages }, status: :unprocessable_entity
   end
 
+  # def profile_update
+  #   image = params[:image]
+  #   image_mime = image[:mime]
+  #   encoded_image = image[:data]
+
+  #   Rails.logger.info("parameters...")
+  #   Rails.logger.info(image)
+  #   Rails.logger.info(image_mime)
+
+  #   if MIME::Types[image_mime].empty?
+  #     return render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
+  #   end
+
+  #   # Decode the base64 encoded image
+  #   image_data = Base64.decode64(encoded_image.split(",").last)
+
+  #   # Create a Tempfile to store the decoded image
+  #   tempfile = Tempfile.new(["uploaded_image", ".jpg"])
+  #   tempfile.binmode
+  #   tempfile.write(image_data)
+  #   tempfile.rewind
+
+  #   # Check the image dimensions using MiniMagick
+  #   image = MiniMagick::Image.read(tempfile)
+  #   width, height = image.width, image.height
+
+  #   if width > 500 || height > 500
+  #     tempfile.close
+  #     tempfile.unlink
+  #     return render json: { error: "Image dimensions are too large" }, status: :unprocessable_entity
+  #   end
+
+  #   tempfile.close
+  #   tempfile.unlink
+
+  #   image_extension = extension(image_mime)
+  #   image_url = put_s3(image_data)
+
+  #   # Initialize Dropbox client (make sure to use a secure method for token)
+  #   Rails.logger.info("dropboxapi access token...")
+  #   Rails.logger.info(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+  #   Rails.logger.info("[]")
+  #   Rails.logger.info(ENV["DROPBOX_ACCESS_TOKEN"])
+
+  #   # client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN")) # Use environment variable
+
+  #   # file_content = "Hello, Dropbox!"
+  #   # client.upload("/hello.txt", file_content)
+  #   # puts "File uploaded successfully!"
+
+  #   # Upload the image to Dropbox
+  #   # dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
+  #   # client.upload(dropbox_path, image_data)
+
+  #   # URL or path to the uploaded image in Dropbox
+
+  #   # image_url = client.get_temporary_link(dropbox_path).link
+
+  #   @m_user = MUser.find_by(id: params[:user_id])
+
+  #   if @m_user
+  #     profile_image_record = MUsersProfileImage.find_or_initialize_by(m_user_id: @m_user.id)
+  #     old_image_url = profile_image_record.image_url
+  #     profile_image_record.image_url = image_url
+
+  #     if profile_image_record.save
+  #       # Optionally, you can delete the old image from Dropbox here
+  #       # delete_from_dropbox(old_image_url) if old_image_url.present?
+
+  #       # delete_from_s3(old_image_url) if old_image_url.present?
+  #       render json: {
+  #         message: "Profile Image Updated Successfully",
+  #         user_id: @m_user.id,
+  #         profile_image: image_url,
+  #       }
+  #     else
+  #       render json: profile_image_record.errors, status: :unprocessable_entity
+  #     end
+  #   else
+  #     render json: { error: "User not found" }, status: :unprocessable_entity
+  #   end
+  # end
+
   def profile_update
     image = params[:image]
     image_mime = image[:mime]
-    encoded_image = image[:data]
-
-    Rails.logger.info("parameters...")
-    Rails.logger.info(image)
-    Rails.logger.info(image_mime)
-
+    image_data = decode(image[:data])
     if MIME::Types[image_mime].empty?
-      return render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
+      render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
+      return
     end
-
-    # Decode the base64 encoded image
+    # Access the base64 encoded image
+    encoded_image = params.dig(:image, :data)
     image_data = Base64.decode64(encoded_image.split(",").last)
-
     # Create a Tempfile to store the decoded image
     tempfile = Tempfile.new(["uploaded_image", ".jpg"])
     tempfile.binmode
     tempfile.write(image_data)
     tempfile.rewind
-
     # Check the image dimensions using MiniMagick
     image = MiniMagick::Image.read(tempfile)
     width, height = image.width, image.height
-
     if width > 500 || height > 500
       tempfile.close
       tempfile.unlink
       return render json: { error: "Image dimensions are too large" }, status: :unprocessable_entity
     end
-
     tempfile.close
     tempfile.unlink
-
+    # Upload image to Dropbox
     image_extension = extension(image_mime)
-    image_url = put_s3(image_data)
-
-    # Initialize Dropbox client (make sure to use a secure method for token)
-    Rails.logger.info("dropboxapi access token...")
-    Rails.logger.info(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
-    Rails.logger.info("[]")
-    Rails.logger.info(ENV["DROPBOX_ACCESS_TOKEN"])
-
-    # client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN")) # Use environment variable
-
-    # file_content = "Hello, Dropbox!"
-    # client.upload("/hello.txt", file_content)
-    # puts "File uploaded successfully!"
-
-    # Upload the image to Dropbox
-    # dropbox_path = "/profile_image_#{Time.now.to_i}.jpg" # or any unique path
-    # client.upload(dropbox_path, image_data)
-
-    # URL or path to the uploaded image in Dropbox
-
-    # image_url = client.get_temporary_link(dropbox_path).link
-
+    image_url = upload_to_dropbox(image_data, image_extension)
     @m_user = MUser.find_by(id: params[:user_id])
-
     if @m_user
       profile_image_record = MUsersProfileImage.find_or_initialize_by(m_user_id: @m_user.id)
       old_image_url = profile_image_record.image_url
       profile_image_record.image_url = image_url
-
       if profile_image_record.save
-        # Optionally, you can delete the old image from Dropbox here
-        # delete_from_dropbox(old_image_url) if old_image_url.present?
-
-        # delete_from_s3(old_image_url) if old_image_url.present?
+        delete_from_dropbox(old_image_url) if old_image_url.present?
         render json: {
           message: "Profile Image Updated Successfully",
           user_id: @m_user.id,
@@ -308,6 +357,33 @@ class MUsersController < ApplicationController
     else
       render json: { error: "User not found" }, status: :unprocessable_entity
     end
+  end
+
+  # Helper method to upload image to Dropbox
+  def upload_to_dropbox(image_data, extension)
+    client = DropboxApi::Client.new(ENV["DROPBOX_ACCESS_TOKEN"])
+    filename = "/profile_images/#{SecureRandom.hex(10)}.#{extension}"
+    # Upload file
+    client.upload(filename, image_data)
+    # Return shared link for the uploaded image
+    link = client.create_shared_link_with_settings(filename)
+    # Dropbox returns URLs that need to be adjusted to access directly
+    link.url.gsub("?dl=0", "?raw=1")  # Converts it to direct download link
+  end
+
+  # Helper method to delete an image from Dropbox
+  def delete_from_dropbox(image_url)
+    client = DropboxApi::Client.new(ENV["DROPBOX_ACCESS_TOKEN"])
+    # Extract the path from the image URL to delete it from Dropbox
+    path = extract_dropbox_path_from_url(image_url)
+    client.delete(path)
+  end
+
+  # Extracts Dropbox path from the public URL
+  def extract_dropbox_path_from_url(image_url)
+    # Example implementation to convert a public Dropbox URL back to a file path
+    uri = URI.parse(image_url)
+    File.join("/profile_images", File.basename(uri.path))
   end
 
   private
@@ -353,23 +429,6 @@ class MUsersController < ApplicationController
 
   # end
 
-  def upload_to_dropbox(data, extension, mime_type)
-    unique_time = Time.now.strftime("%Y%m%d%H%M%S")
-    file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
-    dropbox_path = "/profile_images/#{file_name}"
-
-    client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
-
-    begin
-      client.upload(dropbox_path, data, mode: :add, autorename: true, mute: false)
-      shared_link = client.create_shared_link_with_settings(dropbox_path)
-      shared_link.url
-    rescue DropboxApi::Errors::HttpError => e
-      puts "Failed to upload file: #{e.message}"
-      nil
-    end
-  end
-
   # def delete_from_s3(url)
   #   s3 = Aws::S3::Resource.new
   #   bucket_name = "rails-blog-minio"
@@ -383,14 +442,4 @@ class MUsersController < ApplicationController
 
   #   obj.delete
   # end
-
-  def delete_from_dropbox(url)
-    client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
-
-    # Extract the file path from the URL
-    file_path = url.split("dropbox.com/home").last
-
-    # Delete the file
-    client.delete(file_path)
-  end
 end
