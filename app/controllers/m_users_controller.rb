@@ -339,13 +339,21 @@ class MUsersController < ApplicationController
     # Upload image to Dropbox
     image_extension = extension(image_mime)
     image_url = upload_to_dropbox(image_data, image_extension)
+    Rails.logger.info("image_url...")
+    Rails.logger.info(image_url)
     @m_user = MUser.find_by(id: params[:user_id])
+    Rails.logger.info("@m_user...")
+    Rails.logger.info(@m_user)
     if @m_user
       profile_image_record = MUsersProfileImage.find_or_initialize_by(m_user_id: @m_user.id)
       old_image_url = profile_image_record.image_url
+      Rails.logger.info("old_image_url...")
+      Rails.logger.info(old_image_url)
       profile_image_record.image_url = image_url
       if profile_image_record.save
+        Rails.logger.info("profile is saved...")
         delete_from_dropbox(old_image_url) if old_image_url.present?
+        Rails.logger.info("after delete the old image...")
         render json: {
           message: "Profile Image Updated Successfully",
           user_id: @m_user.id,
