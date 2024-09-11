@@ -33,9 +33,10 @@ class GroupMessageController < ApplicationController
           render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
           return
         end
-        folder_name_for_group_message = "group_message_files"
         file_extension = extension(image_mime)
-        file_url = put_s3(image_data, file_extension, image_mime, folder_name_for_group_message)
+        folder_name_for_group_message = "/group_message_files/#{SecureRandom.hex(10)}_#{file_name}"
+        file_url = upload_to_dropbox(image_data, file_extension, folder_name_for_group_message)
+        file_url = dropbox
         file_records << { file: file_url, mime_type: image_mime, extension: file_extension, file_name: file_name, m_user_id: @m_user.id }
       end
     end
@@ -157,22 +158,11 @@ class GroupMessageController < ApplicationController
               render json: { error: "Unsupported Content-Type" }, status: :unsupported_media_type
               return
             end
-            folder_name_for_group_thread_message = "group_thread_message_files"
+            folder_name_for_group_thread_message = "/group_thread_message_files/#{SecureRandom.hex(10)}_#{file_name}"
             file_extension = extension(image_mime)
 
-            # Modify start
-
-            # client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN")) # Use environment variable
-            # Upload the image to Dropbox
-            dropbox_path = "/group_message_image#{Time.now.to_i}.jpg" # or any unique path
-            client.upload(dropbox_path, image_data)
-
-            # URL or path to the uploaded image in Dropbox
-            file_url = client.get_temporary_link(dropbox_path).link
-
-            # file_url = put_s3(image_data, file_extension, image_mime, folder_name_for_group_thread_message)
-
-            # Modify end
+            file_url = upload_to_dropbox(image_data, file_extension, folder_name_for_group_message)
+            file_url = dropbox
 
             file_records << { file: file_url, mime_type: image_mime, extension: file_extension, m_user_id: @m_user.id, file_name: file_name }
           end
@@ -464,21 +454,41 @@ class GroupMessageController < ApplicationController
     mime.extensions.first ? ".#{mime.extensions.first}" : raise("Unknown extension for MIME type")
   end
 
-  def put_s3(data, extension, mime_type, folder)
-    unique_time = Time.now.strftime("%Y%m%d%H%M%S")
-    file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
-    s3 = Aws::S3::Resource.new
-    bucket = s3.bucket("rails-blog-minio")
-    obj = bucket.object("#{folder}/#{file_name}")
+  # def put_s3(data, extension, mime_type, folder)
+  #   unique_time = Time.now.strftime("%Y%m%d%H%M%S")
+  #   file_name = Digest::SHA1.hexdigest(data) + unique_time + extension
+  #   s3 = Aws::S3::Resource.new
+  #   bucket = s3.bucket("rails-blog-minio")
+  #   obj = bucket.object("#{folder}/#{file_name}")
 
-    obj.put(
-      acl: "public-read",
-      body: data,
-      content_type: mime_type,
-      content_disposition: "inline",
-    )
+  #   obj.put(
+  #     acl: "public-read",
+  #     body: data,
+  #     content_type: mime_type,
+  #     content_disposition: "inline",
+  #   )
 
-    obj.public_url
+  #   obj.public_url
+  # end
+
+  def upload_to_dropbox(image_data, extension, file_name)
+    client = DropboxApi::Client.new(ENV["DROPBOX_ACCESS_TOKEN"])
+    # filename = "/direct_message_files/#{SecureRandom.hex(10)}_#{file_name}"
+
+    # Upload file to Dropbox
+    client.upload(file_name, image_data)
+
+    # Create a shared link for the uploaded file
+    link = client.create_shared_link_with_settings(file_name)
+
+    # Replace dl=0 with raw=1 or append raw=1 if dl=0 isn't present
+    direct_link = if link.url.include?("?dl=0")
+        link.url.gsub("?dl=0", "?raw=1")
+      else
+        "#{link.url}&raw=1"
+      end
+
+    return direct_link
   end
 
   def delete_from_s3(url)
