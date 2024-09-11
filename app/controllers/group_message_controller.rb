@@ -36,7 +36,6 @@ class GroupMessageController < ApplicationController
         file_extension = extension(image_mime)
         folder_name_for_group_message = "/group_message_files/#{SecureRandom.hex(10)}_#{file_name}"
         file_url = upload_to_dropbox(image_data, file_extension, folder_name_for_group_message)
-        file_url = dropbox
         file_records << { file: file_url, mime_type: image_mime, extension: file_extension, file_name: file_name, m_user_id: @m_user.id }
       end
     end
@@ -162,7 +161,6 @@ class GroupMessageController < ApplicationController
             file_extension = extension(image_mime)
 
             file_url = upload_to_dropbox(image_data, file_extension, folder_name_for_group_message)
-            file_url = dropbox
 
             file_records << { file: file_url, mime_type: image_mime, extension: file_extension, m_user_id: @m_user.id, file_name: file_name }
           end
