@@ -375,8 +375,14 @@ class MUsersController < ApplicationController
     client.upload(filename, image_data)
     # Return shared link for the uploaded image
     link = client.create_shared_link_with_settings(filename)
-    # Dropbox returns URLs that need to be adjusted to access directly
-    direct_link = link.url.gsub("?dl=0", "?raw=1")  # Converts it to direct download link
+
+    # Replace dl=0 with raw=1 or append raw=1 if dl=0 isn't present
+    direct_link = if link.url.include?("?dl=0")
+        link.url.gsub("?dl=0", "?raw=1")
+      else
+        "#{link.url}&raw=1"
+      end
+
     return direct_link
   end
 
