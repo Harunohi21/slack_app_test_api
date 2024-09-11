@@ -52,8 +52,8 @@ class GroupMessageController < ApplicationController
     file_records.each do |file_record|
       file_record[:t_group_message_id] = @t_group_message.id
       file_record[:groupmsgid] = @t_group_message.id
-      # TGroupMsgFile.create(file_record)
-      client.upload(file_record)
+      TGroupMsgFile.create(file_record)
+      # client.upload(file_record)
     end
 
     mention_name = params[:mention_name]
