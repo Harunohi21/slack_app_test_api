@@ -170,7 +170,8 @@ class DirectMessageController < ApplicationController
     directthreads = TDirectThread.where(t_direct_message_id: params[:id])
     directthreads.each do |directthread|
       TDirectThreadMsgFile.where(direct_thread_id: directthread.id).each do |file|
-        delete_from_s3(file.file)
+        # delete_from_s3(file.file)
+        delete_from_dropbox(file.file)
       end
       TDirectStarThread.where(directthreadid: directthread.id).destroy_all
       TDirectReactThread.where(directthreadid: directthread.id).destroy_all
@@ -178,7 +179,8 @@ class DirectMessageController < ApplicationController
     end
 
     TDirectMessageFile.where(t_direct_message_id: params[:id]).each do |file|
-      delete_from_s3(file.file)
+      # delete_from_s3(file.file)
+      delete_from_dropbox(file.file)
     end
 
     TDirectStarMsg.where(directmsgid: params[:id]).destroy_all
@@ -212,7 +214,8 @@ class DirectMessageController < ApplicationController
     else
       ActiveRecord::Base.transaction do
         TDirectThreadMsgFile.where(direct_thread_id: params[:id]).each do |file|
-          delete_from_s3(file.file)
+          # delete_from_s3(file.file)
+          delete_from_dropbox(file.file)
         end
         TDirectStarThread.where(directthreadid: params[:id]).destroy_all
         TDirectReactThread.where(directthreadid: params[:id]).destroy_all
@@ -354,13 +357,19 @@ class DirectMessageController < ApplicationController
     return direct_link
   end
 
-  def delete_from_s3(url)
-    s3 = Aws::S3::Resource.new
-    bucket_name = "rails-blog-minio"
-    file_path = url.split("#{bucket_name}/").last
-    bucket = s3.bucket(bucket_name)
-    obj = bucket.object(file_path)
+  # def delete_from_s3(url)
+  #   s3 = Aws::S3::Resource.new
+  #   bucket_name = "rails-blog-minio"
+  #   file_path = url.split("#{bucket_name}/").last
+  #   bucket = s3.bucket(bucket_name)
+  #   obj = bucket.object(file_path)
 
-    obj.delete
+  #   obj.delete
+  # end
+  def delete_from_dropbox(image_url)
+    client = DropboxApi::Client.new(ENV["DROPBOX_ACCESS_TOKEN"])
+    # Extract the path from the image URL to delete it from Dropbox
+    path = extract_dropbox_path_from_url(image_url)
+    client.delete(path)
   end
 end

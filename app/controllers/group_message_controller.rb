@@ -53,7 +53,6 @@ class GroupMessageController < ApplicationController
       file_record[:t_group_message_id] = @t_group_message.id
       file_record[:groupmsgid] = @t_group_message.id
       TGroupMsgFile.create(file_record)
-      # client.upload(file_record)
     end
 
     mention_name = params[:mention_name]
@@ -267,7 +266,8 @@ class GroupMessageController < ApplicationController
       gpthread = TGroupThread.select("id").where(t_group_message_id: params[:id])
       gpthread.each do |gpthread|
         TGroupThreadMsgFile.where(groupthreadmsgid: gpthread).each do |file|
-          delete_from_s3(file.file)
+          # delete_from_s3(file.file)
+          delete_from_dropbox(file.file)
         end
         TGroupStarThread.where(groupthreadid: gpthread.id).destroy_all
         TGroupMentionThread.where(groupthreadid: gpthread.id).destroy_all
@@ -276,7 +276,8 @@ class GroupMessageController < ApplicationController
       end
 
       TGroupMsgFile.where(groupmsgid: params[:id]).each do |file|
-        delete_from_s3(file.file)
+        # delete_from_s3(file.file)
+        delete_from_dropbox(file.file)
       end
 
       TGroupStarMsg.where(groupmsgid: params[:id]).destroy_all
@@ -319,7 +320,8 @@ class GroupMessageController < ApplicationController
     else
       @t_group_thread = TGroupThread.find_by(id: params[:id])
       TGroupThreadMsgFile.where(groupthreadmsgid: @t_group_thread.id).each do |file|
-        delete_from_s3(file.file)
+        # delete_from_s3(file.file)
+        delete_from_dropbox(file.file)
       end
       TGroupStarThread.where(groupthreadid: params[:id]).destroy_all
       TGroupReactThread.where(groupthreadid: params[:id]).destroy_all
@@ -489,13 +491,20 @@ class GroupMessageController < ApplicationController
     return direct_link
   end
 
-  def delete_from_s3(url)
-    s3 = Aws::S3::Resource.new
-    bucket_name = "rails-blog-minio"
-    file_path = url.split("#{bucket_name}/").last
-    bucket = s3.bucket(bucket_name)
-    obj = bucket.object(file_path)
+  # def delete_from_s3(url)
+  #   s3 = Aws::S3::Resource.new
+  #   bucket_name = "rails-blog-minio"
+  #   file_path = url.split("#{bucket_name}/").last
+  #   bucket = s3.bucket(bucket_name)
+  #   obj = bucket.object(file_path)
 
-    obj.delete
+  #   obj.delete
+  # end
+
+  def delete_from_dropbox(image_url)
+    client = DropboxApi::Client.new(ENV["DROPBOX_ACCESS_TOKEN"])
+    # Extract the path from the image URL to delete it from Dropbox
+    path = extract_dropbox_path_from_url(image_url)
+    client.delete(path)
   end
 end
