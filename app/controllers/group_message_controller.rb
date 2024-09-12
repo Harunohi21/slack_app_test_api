@@ -278,6 +278,7 @@ class GroupMessageController < ApplicationController
       TGroupMsgFile.where(groupmsgid: params[:id]).each do |file|
         # delete_from_s3(file.file)
         delete_from_dropbox(file.file)
+        puts "delete file from TGroupMsgFile"
       end
 
       TGroupStarMsg.where(groupmsgid: params[:id]).destroy_all
@@ -501,13 +502,30 @@ class GroupMessageController < ApplicationController
   #   obj.delete
   # end
 
-  def delete_from_dropbox(image_url)
+  # def delete_from_dropbox(image_url)
+  #   client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+
+  #   # Extract the file path from the URL
+  #   # file_path = url.split("dropbox.com/home").last
+
+  #   # Delete the file
+  #   client.delete(image_url)
+  # end
+
+  def delete_from_dropbox(file_url)
     client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+    begin
+      # Retrieve metadata about the shared link
+      shared_link_metadata = client.shares(file_url)
 
-    # Extract the file path from the URL
-    # file_path = url.split("dropbox.com/home").last
+      # Extract the file path from the metadata
+      file_path = shared_link_metadata.path
 
-    # Delete the file
-    client.delete(image_url)
+      # Delete the file using the file path
+      client.file(file_path).destroy
+      puts "File at #{file_url} has been deleted."
+    rescue Dropbox::API::Error => err
+      puts "Failed to delete file: #{err}"
+    end
   end
 end
