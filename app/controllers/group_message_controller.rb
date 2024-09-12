@@ -505,9 +505,9 @@ class GroupMessageController < ApplicationController
     client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
 
     # Extract the file path from the URL
-    file_path = url.split("dropbox.com/home").last
+    # file_path = url.split("dropbox.com/home").last
 
     # Delete the file
-    client.delete(file_path)
+    client.delete(image_url)
   end
 end
