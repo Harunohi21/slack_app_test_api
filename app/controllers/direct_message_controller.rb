@@ -379,19 +379,23 @@ class DirectMessageController < ApplicationController
 
   def delete_from_dropbox(file_url)
     client = DropboxApi::Client.new(ENV.fetch("DROPBOX_ACCESS_TOKEN"))
+
     begin
       # Retrieve metadata about the shared link
-      shared_link_metadata = client.shares(file_url)
+      shared_link_metadata = client.get_shared_link_metadata(url: file_url)
 
-      # Extract the file path from the metadata
-      file_path = shared_link_metadata.path
+      # Extract the file path from the metadata (use path_lower for consistency)
+      file_path = shared_link_metadata.path_lower
 
       # Delete the file using the file path
-      client.file(file_path).destroy
+      client.delete(file_path)
       puts "File at #{file_url} has been deleted."
+    rescue DropboxApi::Errors::NotFoundError => err
+      puts "File not found: #{err.message}"
     rescue DropboxApi::Errors::HttpError => err
-      # handle the error here
-      puts "An error occurred: #{err.message}"
+      puts "An HTTP error occurred: #{err.message}"
+    rescue StandardError => err
+      puts "An unexpected error occurred: #{err.message}"
     end
   end
 end
