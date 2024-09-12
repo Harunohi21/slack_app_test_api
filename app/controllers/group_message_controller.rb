@@ -524,8 +524,9 @@ class GroupMessageController < ApplicationController
       # Delete the file using the file path
       client.file(file_path).destroy
       puts "File at #{file_url} has been deleted."
-    rescue Dropbox::API::Error => err
-      puts "Failed to delete file: #{err}"
+    rescue DropboxApi::Errors::HttpError => err
+      # handle the error here
+      puts "An error occurred: #{err.message}"
     end
   end
 end
